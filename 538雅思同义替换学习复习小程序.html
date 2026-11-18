@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<!--
+  源自小红书博主「BATACO云天」，并新增记忆复习功能
+  原帖：https://www.xiaohongshu.com/explore/696bbe49000000001a0301c9
+-->
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>雅思538同义替换 · 沉浸背词</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-sub: #7f8c8d;
+            --accent: #00b894;
+            --accent-hover: #00a383;
+            --warn: #ff7675;
+            --review-color: #f39c12;
+            --shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            --radius: 24px;
+            --safe-bottom: env(safe-area-inset-bottom, 16px);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* ===== 顶部 ===== */
+        .header {
+            padding: 12px 16px 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--text-sub);
+            flex-shrink: 0;
+            background: var(--bg-color);
+            z-index: 10;
+            min-height: 48px;
+        }
+
+        .header-left {
+            white-space: nowrap;
+            min-width: 60px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            min-width: 40px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: #e8ecf1;
+            border-radius: 20px;
+            padding: 2px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+
+        .mode-toggle .mode-option {
+            padding: 4px 10px;
+            border-radius: 18px;
+            transition: all 0.25s ease;
+            color: var(--text-sub);
+            background: transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            font-size: 11px;
+            touch-action: manipulation;
+        }
+
+        .mode-toggle .mode-option.active {
+            background: white;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.10);
+        }
+
+        .mode-toggle .mode-option:active {
+            transform: scale(0.94);
+        }
+
+        .badge-wrong {
+            background: var(--warn);
+            color: #fff;
+            border-radius: 12px;
+            padding: 0 7px;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 18px;
+            white-space: nowrap;
+            display: inline-block;
+            min-width: 18px;
+            text-align: center;
+        }
+
+        .badge-wrong.hidden {
+            display: none;
+        }
+
+        .brand {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 12px;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        /* ===== 主区域 ===== */
+        .main-stage {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 14px 4px 14px;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 28px 20px 24px 20px;
+            text-align: center;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 380px;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+            touch-action: manipulation;
+        }
+
+        .card.review-mode {
+            border-color: var(--review-color);
+            box-shadow: 0 8px 30px rgba(243, 156, 18, 0.12);
+        }
+
+        .card .mode-badge {
+            position: absolute;
+            top: -10px;
+            right: 16px;
+            background: var(--review-color);
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 12px;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .card.review-mode .mode-badge {
+            opacity: 1;
+        }
+
+        .word-section {
+            margin-bottom: 10px;
+        }
+
+        .word-main {
+            font-size: 2.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .word-meaning {
+            font-size: 1.1rem;
+            color: var(--text-sub);
+            font-weight: 400;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            min-height: 1.6rem;
+        }
+
+        .synonym-section {
+            margin-top: 20px;
+            text-align: left;
+            background: #f8fcfb;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border-left: 4px solid var(--accent);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            display: none;
+        }
+
+        .card.review-mode .synonym-section {
+            border-left-color: var(--review-color);
+        }
+
+        .synonym-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .card.review-mode .synonym-label {
+            color: var(--review-color);
+        }
+
+        .synonym-content {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #2d3436;
+            line-height: 1.7;
+        }
+
+        .synonym-content span {
+            display: inline-block;
+            margin-right: 10px;
+            margin-bottom: 2px;
+        }
+
+        .extra-info {
+            margin-top: 14px;
+            font-size: 0.88rem;
+            color: #636e72;
+            text-align: left;
+            opacity: 0;
+            transition: opacity 0.3s ease 0.1s;
+            display: none;
+        }
+
+        .extra-info .tag {
+            display: inline-block;
+            background: #eee;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            margin-right: 5px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .extra-info>div {
+            margin-bottom: 3px;
+        }
+        .extra-info>div:last-child {
+            margin-bottom: 0;
+        }
+
+        .card.revealed .word-meaning,
+        .card.revealed .synonym-section,
+        .card.revealed .extra-info {
+            opacity: 1;
+            transform: translateY(0);
+            display: block;
+        }
+
+        /* ===== 底部按钮（关键优化） ===== */
+        .controls {
+            padding: 10px 16px 6px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+            background: var(--bg-color);
+            min-height: 76px;
+            align-items: center;
+        }
+
+        .credit-note {
+            font-size: 11px;
+            color: #b6c0d1;
+            text-align: center;
+            opacity: .85;
+            line-height: 1.5;
+            flex-shrink: 0;
+        }
+        .credit-note a {
+            color: inherit;
+            text-decoration: none;
+        }
+        .credit-note a:hover {
+            color: #94a3b8;
+        }
+
+        .controls .btn-group {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+            max-width: 440px;
+            justify-content: center;
+        }
+
+        .btn {
+            border: none;
+            padding: 16px 0;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, box-shadow 0.15s, background 0.2s;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            flex: 1;
+            max-width: 170px;
+            text-align: center;
+            touch-action: manipulation;
+            -webkit-touch-callout: none;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:active {
+            transform: scale(0.94);
+        }
+
+        .btn-reveal {
+            background: var(--text-main);
+            color: white;
+            width: 100%;
+            max-width: 320px;
+            flex: none;
+            min-height: 56px;
+            font-size: 17px;
+        }
+
+        .btn-reveal:active {
+            background: #1a2a3a;
+        }
+
+        .btn-forgot {
+            background: #fff;
+            color: var(--warn);
+            border: 2px solid #ffe0e0;
+        }
+
+        .btn-forgot:active {
+            background: #fff5f5;
+        }
+
+        .btn-know {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-know:active {
+            background: var(--accent-hover);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== 结束/空状态 ===== */
+        .finish-screen,
+        .empty-review,
+        .error-screen {
+            text-align: center;
+            width: 100%;
+            max-width: 440px;
+            padding: 30px 20px;
+            display: none;
+        }
+
+        .finish-screen .emoji-big,
+        .empty-review .emoji-big,
+        .error-screen .emoji-big {
+            font-size: 52px;
+            margin-bottom: 10px;
+        }
+
+        .finish-screen h2,
+        .empty-review h3,
+        .error-screen h3 {
+            margin: 6px 0 4px 0;
+        }
+
+        .finish-screen p,
+        .empty-review p,
+        .error-screen p {
+            color: var(--text-sub);
+            margin: 4px 0 12px 0;
+            line-height: 1.5;
+        }
+
+        .finish-screen .btn,
+        .empty-review .btn,
+        .error-screen .btn {
+            max-width: 180px;
+            margin: 6px auto 0 auto;
+            flex: none;
+            display: inline-flex;
+            padding: 14px 28px;
+            min-height: 50px;
+        }
+
+        .error-screen {
+            color: var(--warn);
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 420px) {
+            .header {
+                padding: 8px 10px 6px 10px;
+                font-size: 11px;
+                gap: 6px;
+            }
+            .header-left {
+                min-width: 44px;
+                font-size: 10px;
+            }
+            .mode-toggle .mode-option {
+                padding: 3px 8px;
+                font-size: 10px;
+            }
+            .brand {
+                font-size: 10px;
+            }
+            .card {
+                padding: 20px 14px 18px 14px;
+                min-height: 300px;
+            }
+            .word-main {
+                font-size: 2.0rem;
+            }
+            .word-meaning {
+                font-size: 0.95rem;
+            }
+            .synonym-content {
+                font-size: 1.0rem;
+            }
+            .btn {
+                font-size: 14px;
+                padding: 14px 0;
+                max-width: 140px;
+                min-height: 50px;
+            }
+            .btn-reveal {
+                font-size: 15px;
+                min-height: 50px;
+                max-width: 260px;
+            }
+            .controls {
+                padding: 8px 12px calc(10px + var(--safe-bottom));
+                min-height: 68px;
+            }
+            .controls .btn-group {
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .word-main {
+                font-size: 1.6rem;
+            }
+            .synonym-content {
+                font-size: 0.9rem;
+            }
+            .btn {
+                font-size: 13px;
+                padding: 12px 0;
+                max-width: 120px;
+                min-height: 44px;
+            }
+            .btn-reveal {
+                font-size: 14px;
+                min-height: 44px;
+                max-width: 220px;
+            }
+            .card {
+                padding: 16px 10px 14px 10px;
+                min-height: 260px;
+            }
+            .controls {
+                min-height: 60px;
+                padding: 6px 10px calc(8px + var(--safe-bottom));
+            }
+        }
+
+        @media (min-height: 800px) {
+            .card {
+                min-height: 440px;
+            }
+            .word-main {
+                font-size: 3.0rem;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <span class="header-left" id="progress-text">0 / 538</span>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <div class="header-right">
+            <span class="badge-wrong hidden" id="badge-wrong">0</span>
+            <div class="mode-toggle" id="mode-toggle">
+                <span class="mode-option active" data-mode="learn">学习</span>
+                <span class="mode-option" data-mode="review">复习</span>
+            </div>
+            <span class="brand">雅思538</span>
+        </div>
+    </div>
+
+    <div class="main-stage" id="main-stage">
+        <div class="card" id="card">
+            <span class="mode-badge">📖 复习</span>
+            <div class="word-section">
+                <div class="word-main" id="word-display">Loading...</div>
+                <div class="word-meaning" id="meaning-display">中文意思</div>
+            </div>
+
+            <div class="synonym-section">
+                <div class="synonym-label">Paraphrase / Synonyms</div>
+                <div class="synonym-content" id="synonym-display"></div>
+            </div>
+
+            <div class="extra-info">
+                <div style="margin-bottom:3px;" id="template-box">
+                    <span class="tag">考点</span> <span id="template-display">...</span>
+                </div>
+                <div id="hint-box">
+                    <span class="tag">记忆</span> <span id="hint-display">...</span>
+                </div>
+            </div>
+
+            <div class="empty-review" id="empty-review">
+                <div class="emoji-big">🎉</div>
+                <h3>错词本已清空</h3>
+                <p>所有错词都已复习完毕，继续学习新词吧！</p>
+                <button class="btn btn-know" id="btn-back-to-learn">继续学习</button>
+            </div>
+
+            <div class="error-screen" id="error-screen">
+                <div class="emoji-big">⚠️</div>
+                <h3>数据加载失败</h3>
+                <p>请尝试刷新页面</p>
+                <button class="btn btn-reveal" onclick="location.reload()">重新加载</button>
+            </div>
+        </div>
+
+        <div class="finish-screen" id="finish-screen">
+            <div class="emoji-big">🎉</div>
+            <h2>今日计划完成</h2>
+            <p>538 考点词已全部过完</p>
+            <button class="btn btn-know" onclick="location.reload()">重新开始</button>
+        </div>
+    </div>
+
+    <div class="controls" id="controls-area">
+        <button class="btn btn-reveal" id="btn-reveal">👆 点我查看答案</button>
+        <div class="btn-group hidden" id="btn-grade-group">
+            <button class="btn btn-forgot" id="btn-forgot">❌ 没记住</button>
+            <button class="btn btn-know" id="btn-know">✅ 记住了</button>
+        </div>
+    </div>
+
+    <div class="credit-note" style="padding:0 16px calc(10px + var(--safe-bottom));background:var(--bg-color);">源自 <a href="https://www.xiaohongshu.com/explore/696bbe49000000001a0301c9" target="_blank" rel="noopener">小红书博主「BATACO云天」</a>，并新增记忆复习功能</div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            // ============================================================
+            //  1. 数据 (538条)
+            // ============================================================
+            const rawDataString =
+                `1,achieve,达到（水平/目标）,reach; hit; attain; arrive at,reach a level of…,attain=达到
+2,arrive at,达到（水平/目标）,reach; hit; attain; achieve,reach a level of…,attain=达到
+3,attain,达到（水平/目标）,reach; hit; achieve; arrive at,reach a level of…,attain=达到
+4,hit,达到（水平/目标）,reach; attain; achieve; arrive at,reach a level of…,attain=达到
+5,reach,达到（水平/目标）,hit; attain; achieve; arrive at,reach a level of…,attain=达到
+6,upswing,上升趋势（名词）,upward trend; growth; rise; increase,an upswing in sales,upward trend=上升趋势
+7,upward trend,上升趋势（名词）,upswing; growth; rise; increase,an upswing in sales,upward trend=上升趋势
+8,heighten,上升（程度）,intensify; escalate; strengthen; reinforce,intensify competition,heighten=提高
+9,intensify,上升（程度）,escalate; strengthen; reinforce; heighten,intensify competition,heighten=提高
+10,strengthen,上升（程度）,intensify; escalate; reinforce; heighten,intensify competition,heighten=提高
+11,decline to,下降到…水平,fall to; drop to; decrease to; sink to,drop to 10%,sink to=降到
+12,decrease to,下降到…水平,fall to; drop to; decline to; sink to,drop to 10%,sink to=降到
+13,drop to,下降到…水平,fall to; decline to; decrease to; sink to,drop to 10%,sink to=降到
+14,fall to,下降到…水平,drop to; decline to; decrease to; sink to,drop to 10%,sink to=降到
+15,sink to,下降到…水平,fall to; drop to; decline to; decrease to,drop to 10%,sink to=降到
+16,subside,下降趋势,decline; decrease; drop; fall,subside over time,subside=减弱
+17,downward trend,下降趋势（名词）,fall; drop; decline; reduction,a downward trend,
+18,dilute,下降（程度）,weaken; reduce; lessen; soften,weaken the effect,dilute=稀释
+19,soften,下降（程度）,weaken; dilute; reduce; lessen,weaken the effect,dilute=稀释
+20,weaken,下降（程度）,dilute; reduce; lessen; soften,weaken the effect,dilute=稀释
+21,faulty,不准确,inaccurate; imprecise; wrong; unreliable,faulty data,faulty=有缺陷
+22,imprecise,不准确,inaccurate; wrong; faulty; unreliable,faulty data,faulty=有缺陷
+23,inaccurate,不准确,imprecise; wrong; faulty; unreliable,faulty data,faulty=有缺陷
+24,unreliable,不准确,inaccurate; imprecise; wrong; faulty,faulty data,faulty=有缺陷
+25,wrong,不准确,inaccurate; imprecise; faulty; unreliable,faulty data,faulty=有缺陷
+26,below,不到,under; less than; fewer than; not more than,below 50,fewer than=少于
+27,fewer than,不到,under; less than; below; not more than,below 50,fewer than=少于
+28,less than,不到,under; below; fewer than; not more than,below 50,fewer than=少于
+29,not more than,不到,under; less than; below; fewer than,below 50,fewer than=少于
+30,under,不到,less than; below; fewer than; not more than,below 50,fewer than=少于
+31,inaccessible,不可用,unavailable; out of reach; scarce; limited,inaccessible areas,
+32,out of reach,不可用,unavailable; inaccessible; scarce; limited,inaccessible areas,
+33,unavailable,不可用,inaccessible; out of reach; scarce; limited,inaccessible areas,
+34,impossible,不可能的,unlikely; improbable; infeasible; remote,highly unlikely,remote=可能性极小
+35,improbable,不可能的,impossible; unlikely; infeasible; remote,highly unlikely,remote=可能性极小
+36,infeasible,不可能的,impossible; unlikely; improbable; remote,highly unlikely,remote=可能性极小
+37,remote,不可能的,impossible; unlikely; improbable; infeasible,highly unlikely,remote=可能性极小
+38,unlikely,不可能的,impossible; improbable; infeasible; remote,highly unlikely,remote=可能性极小
+39,different,不同/差异,varied; distinct; diverse; unlike,different → distinct/diverse,distinct=明显不同
+40,distinct,不同/差异,different; varied; diverse; unlike,different → distinct/diverse,distinct=明显不同
+41,diverse,不同/差异,different; varied; distinct; unlike,different → distinct/diverse,distinct=明显不同
+42,unlike,不同/差异,different; varied; distinct; diverse,different → distinct/diverse,distinct=明显不同
+43,varied,不同/差异,different; distinct; diverse; unlike,different → distinct/diverse,distinct=明显不同
+44,be sceptical,不同意,disagree; deny; refute; reject,refute a claim → reject/deny,sceptical=持怀疑
+45,deny,不同意,disagree; refute; reject; be sceptical,refute a claim → reject/deny,sceptical=持怀疑
+46,disagree,不同意,deny; refute; reject; be sceptical,refute a claim → reject/deny,sceptical=持怀疑
+47,refute,不同意,disagree; deny; reject; be sceptical,refute a claim → reject/deny,sceptical=持怀疑
+48,abnormal,不寻常的,unusual; atypical; odd; anomalous,an unusual pattern,anomalous=反常
+49,anomalous,不寻常的,unusual; abnormal; atypical; odd,an unusual pattern,anomalous=反常
+50,atypical,不寻常的,unusual; abnormal; odd; anomalous,an unusual pattern,anomalous=反常
+51,odd,不寻常的,unusual; abnormal; atypical; anomalous,an unusual pattern,anomalous=反常
+52,unusual,不寻常的,abnormal; atypical; odd; anomalous,an unusual pattern,anomalous=反常
+53,balanced,中立,neutral; objective; impartial; unbiased,objective analysis,impartial=公正
+54,impartial,中立,neutral; objective; balanced; unbiased,objective analysis,impartial=公正
+55,neutral,中立,objective; impartial; balanced; unbiased,objective analysis,impartial=公正
+56,unbiased,中立,neutral; objective; impartial; balanced,objective analysis,impartial=公正
+57,chief,主要的,main; major; primary; principal,primary cause → main cause,principal=主要的
+58,main,主要的,major; primary; principal; chief,primary cause → main cause,principal=主要的
+59,major,主要的,main; primary; principal; chief,primary cause → main cause,principal=主要的
+60,primary,主要的,main; major; principal; chief,primary cause → main cause,principal=主要的
+61,principal,主要的,main; major; primary; chief,primary cause → main cause,principal=主要的
+62,learn,习得,acquire; pick up; master; gain,acquire a skill,master=掌握
+63,master,习得,learn; acquire; pick up; gain,acquire a skill,master=掌握
+64,pick up,习得,learn; acquire; master; gain,acquire a skill,master=掌握
+65,custom,习惯,habit; practice; routine; pattern,daily routine,custom=风俗
+66,habit,习惯,custom; practice; routine; pattern,daily routine,custom=风俗
+67,practice,习惯,habit; custom; routine; pattern,daily routine,custom=风俗
+68,routine,习惯,habit; custom; practice; pattern,daily routine,custom=风俗
+69,arguable,争议,controversial; debatable; contentious; disputed,a controversial issue,contentious=有争议
+70,contentious,争议,controversial; debatable; disputed; arguable,a controversial issue,contentious=有争议
+71,controversial,争议,debatable; contentious; disputed; arguable,a controversial issue,contentious=有争议
+72,debatable,争议,controversial; contentious; disputed; arguable,a controversial issue,contentious=有争议
+73,disputed,争议,controversial; debatable; contentious; arguable,a controversial issue,contentious=有争议
+74,commuting,交通,transport; transportation; traffic; transit,public transport,transit=公共交通
+75,traffic,交通,transport; transportation; transit; commuting,public transport,transit=公共交通
+76,transit,交通,transport; transportation; traffic; commuting,public transport,transit=公共交通
+77,transport,交通,transportation; traffic; transit; commuting,public transport,transit=公共交通
+78,transportation,交通,transport; traffic; transit; commuting,public transport,transit=公共交通
+79,generation,产量,production; output; yield; manufacturing,crop yield,yield=产量
+80,manufacturing,产量,production; output; yield; generation,crop yield,yield=产量
+81,production,产量,output; yield; manufacturing; generation,crop yield,yield=产量
+82,yield,产量,production; output; manufacturing; generation,crop yield,yield=产量
+83,citizens,人口,population; residents; inhabitants; people,population growth,inhabitants=居民
+84,inhabitants,人口,population; residents; citizens; people,population growth,inhabitants=居民
+85,people,人口,population; residents; inhabitants; citizens,population growth,inhabitants=居民
+86,population,人口,residents; inhabitants; citizens; people,population growth,inhabitants=居民
+87,residents,人口,population; inhabitants; citizens; people,population growth,inhabitants=居民
+88,advantage,优点,benefit; strength; plus; merit,benefit of X → advantage of X,merit=优点
+89,benefit,优点,advantage; strength; plus; merit,benefit of X → advantage of X,merit=优点
+90,merit,优点,advantage; benefit; strength; plus,benefit of X → advantage of X,merit=优点
+91,plus,优点,advantage; benefit; strength; merit,benefit of X → advantage of X,merit=优点
+92,strength,优点,advantage; benefit; plus; merit,benefit of X → advantage of X,merit=优点
+93,classic,传统的,traditional; conventional; old-fashioned; established,conventional methods,established=成熟的
+94,conventional,传统的,traditional; classic; old-fashioned; established,conventional methods,established=成熟的
+95,established,传统的,traditional; conventional; classic; old-fashioned,conventional methods,established=成熟的
+96,old-fashioned,传统的,traditional; conventional; classic; established,conventional methods,established=成熟的
+97,traditional,传统的,conventional; classic; old-fashioned; established,conventional methods,established=成熟的
+98,accommodation,住房,housing; residence; homes; dwellings,affordable housing,dwelling=住所
+99,dwellings,住房,housing; accommodation; residence; homes,affordable housing,dwelling=住所
+100,homes,住房,housing; accommodation; residence; dwellings,affordable housing,dwelling=住所
+101,housing,住房,accommodation; residence; homes; dwellings,affordable housing,dwelling=住所
+102,residence,住房,housing; accommodation; homes; dwellings,affordable housing,dwelling=住所
+103,employ,使用,use; utilize; apply; make use of,utilize resources,employ=采用方法
+104,make use of,使用,use; utilize; employ; apply,utilize resources,employ=采用方法
+105,use,使用,utilize; employ; apply; make use of,utilize resources,employ=采用方法
+106,utilize,使用,use; employ; apply; make use of,utilize resources,employ=采用方法
+107,availability,供应,supply; provide; deliver; stock,supply chain,availability=可获得
+108,be based on,依赖,rely on; depend on; draw on; lean on,A relies on B → A depends on B,be based on 常见于观点/研究
+109,depend on,依赖,rely on; be based on; draw on; lean on,A relies on B → A depends on B,be based on 常见于观点/研究
+110,draw on,依赖,rely on; depend on; be based on; lean on,A relies on B → A depends on B,be based on 常见于观点/研究
+111,lean on,依赖,rely on; depend on; be based on; draw on,A relies on B → A depends on B,be based on 常见于观点/研究
+112,rely on,依赖,depend on; be based on; draw on; lean on,A relies on B → A depends on B,be based on 常见于观点/研究
+113,conserve,保护,protect; safeguard; preserve; shield,protect wildlife → conserve wildlife,conserve=保护资源
+114,protect,保护,safeguard; preserve; conserve; shield,protect wildlife → conserve wildlife,conserve=保护资源
+115,safeguard,保护,protect; preserve; conserve; shield,protect wildlife → conserve wildlife,conserve=保护资源
+116,shield,保护,protect; safeguard; preserve; conserve,protect wildlife → conserve wildlife,conserve=保护资源
+117,conservation zone,保护区,reserve; protected area; sanctuary; park,wildlife sanctuary,sanctuary=庇护所
+118,park,保护区,reserve; protected area; sanctuary; conservation zone,wildlife sanctuary,sanctuary=庇护所
+119,protected area,保护区,reserve; sanctuary; conservation zone; park,wildlife sanctuary,sanctuary=庇护所
+120,sanctuary,保护区,reserve; protected area; conservation zone; park,wildlife sanctuary,sanctuary=庇护所
+121,keep,保持/维持,maintain; preserve; sustain; retain,maintain X → keep/preserve X,preserve 偏保护原状
+122,maintain,保持/维持,preserve; sustain; retain; keep,maintain X → keep/preserve X,preserve 偏保护原状
+123,preserve,保持/维持,maintain; sustain; retain; keep,maintain X → keep/preserve X,preserve 偏保护原状
+124,retain,保持/维持,maintain; preserve; sustain; keep,maintain X → keep/preserve X,preserve 偏保护原状
+125,sustain,保持/维持,maintain; preserve; retain; keep,maintain X → keep/preserve X,preserve 偏保护原状
+126,assume,假设,suppose; presume; hypothesize; postulate,assume that…,hypothesize=提出假设
+127,hypothesize,假设,assume; suppose; presume; postulate,assume that…,hypothesize=提出假设
+128,postulate,假设,assume; suppose; presume; hypothesize,assume that…,hypothesize=提出假设
+129,presume,假设,assume; suppose; hypothesize; postulate,assume that…,hypothesize=提出假设
+130,suppose,假设,assume; presume; hypothesize; postulate,assume that…,hypothesize=提出假设
+131,fitness,健康,health; well-being; welfare; public health,health benefits,well-being=身心健康
+132,health,健康,well-being; fitness; welfare; public health,health benefits,well-being=身心健康
+133,public health,健康,health; well-being; fitness; welfare,health benefits,well-being=身心健康
+134,welfare,健康,health; well-being; fitness; public health,health benefits,well-being=身心健康
+135,well-being,健康,health; fitness; welfare; public health,health benefits,well-being=身心健康
+136,be similar to,像/相似,resemble; take after; look like; mirror,A resembles B → A is similar to B,注意 resemble 后不加 to
+137,look like,像/相似,resemble; be similar to; take after; mirror,A resembles B → A is similar to B,注意 resemble 后不加 to
+138,mirror,像/相似,resemble; be similar to; take after; look like,A resembles B → A is similar to B,注意 resemble 后不加 to139,resemble,像/相似,be similar to; take after; look like; mirror,A resembles B → A is similar to B,注意 resemble 后不加 to
+140,take after,像/相似,resemble; be similar to; look like; mirror,A resembles B → A is similar to B,注意 resemble 后不加 to
+141,allow,允许,permit; enable; let; authorize,allow X to do Y → enable X to do Y,enable=使能够
+142,authorize,允许,allow; permit; enable; let,allow X to do Y → enable X to do Y,enable=使能够
+143,enable,允许,allow; permit; let; authorize,allow X to do Y → enable X to do Y,enable=使能够
+144,let,允许,allow; permit; enable; authorize,allow X to do Y → enable X to do Y,enable=使能够
+145,permit,允许,allow; enable; let; authorize,allow X to do Y → enable X to do Y,enable=使能够
+146,adequate,充足,sufficient; enough; plenty; ample,adequate → sufficient,ample=很充足
+147,ample,充足,sufficient; adequate; enough; plenty,adequate → sufficient,ample=很充足
+148,enough,充足,sufficient; adequate; plenty; ample,adequate → sufficient,ample=很充足
+149,plenty,充足,sufficient; adequate; enough; ample,adequate → sufficient,ample=很充足
+150,sufficient,充足,adequate; enough; plenty; ample,adequate → sufficient,ample=很充足
+151,climate heating,全球变暖,global warming; rising temperatures; warming trend; heat increase,global warming → rising temperatures,注意不要和天气混
+152,global warming,全球变暖,rising temperatures; climate heating; warming trend; heat increase,global warming → rising temperatures,注意不要和天气混
+153,heat increase,全球变暖,global warming; rising temperatures; climate heating; warming trend,global warming → rising temperatures,注意不要和天气混
+154,rising temperatures,全球变暖,global warming; climate heating; warming trend; heat increase,global warming → rising temperatures,注意不要和天气混
+155,warming trend,全球变暖,global warming; rising temperatures; climate heating; heat increase,global warming → rising temperatures,注意不要和天气混
+156,all,全部的,entire; whole; overall; complete,the entire population,overall=总体上
+157,complete,全部的,all; entire; whole; overall,the entire population,overall=总体上
+158,entire,全部的,all; whole; overall; complete,the entire population,overall=总体上
+159,overall,全部的,all; entire; whole; complete,the entire population,overall=总体上
+160,whole,全部的,all; entire; overall; complete,the entire population,overall=总体上
+161,characteristic,典型的,typical; representative; standard; ordinary,typical of X,representative=有代表
+162,ordinary,典型的,typical; representative; standard; characteristic,typical of X,representative=有代表
+163,representative,典型的,typical; standard; ordinary; characteristic,typical of X,representative=有代表
+164,standard,典型的,typical; representative; ordinary; characteristic,typical of X,representative=有代表
+165,typical,典型的,representative; standard; ordinary; characteristic,typical of X,representative=有代表
+166,accurate,准确,precise; exact; correct; reliable,precise measurement,reliable=可靠
+167,correct,准确,accurate; precise; exact; reliable,precise measurement,reliable=可靠
+168,exact,准确,accurate; precise; correct; reliable,precise measurement,reliable=可靠
+169,precise,准确,accurate; exact; correct; reliable,precise measurement,reliable=可靠
+170,reliable,准确,accurate; precise; exact; correct,precise measurement,reliable=可靠
+171,decline,减少,decrease; reduce; drop; fall; diminish,decrease → reduce/fall,diminish 更书面
+172,decrease,减少,reduce; decline; drop; fall; diminish,decrease → reduce/fall,diminish 更书面
+173,diminish,减少,decrease; reduce; decline; drop; fall,decrease → reduce/fall,diminish 更书面
+174,drop,减少,decrease; reduce; decline; fall; diminish,decrease → reduce/fall,diminish 更书面
+175,fall,减少,decrease; reduce; decline; drop; diminish,decrease → reduce/fall,diminish 更书面
+176,reduce,减少,decrease; decline; drop; fall; diminish,decrease → reduce/fall,diminish 更书面
+177,curb emissions,减少排放,cut emissions; reduce emissions; lower emissions; limit emissions,curb emissions,
+178,cut emissions,减少排放,reduce emissions; lower emissions; curb emissions; limit emissions,curb emissions,
+179,limit emissions,减少排放,cut emissions; reduce emissions; lower emissions; curb emissions,curb emissions,
+180,lower emissions,减少排放,cut emissions; reduce emissions; curb emissions; limit emissions,curb emissions,
+181,reduce emissions,减少排放,cut emissions; lower emissions; curb emissions; limit emissions,curb emissions,
+182,halve,减少数量,reduce; cut; drop; shrink,halve the cost,halve=减半
+183,avoid waste,减少浪费,save; conserve; economize; cut down,conserve water,economize=节约
+184,cut down,减少浪费,save; conserve; economize; avoid waste,conserve water,economize=节约
+185,economize,减少浪费,save; conserve; cut down; avoid waste,conserve water,economize=节约
+186,save,减少浪费,conserve; economize; cut down; avoid waste,conserve water,economize=节约
+187,lessen,减少风险,reduce risk; lower risk; minimize risk; mitigate,mitigate risks,mitigate=缓解
+188,lower risk,减少风险,reduce risk; minimize risk; mitigate; lessen,mitigate risks,mitigate=缓解
+189,minimize risk,减少风险,reduce risk; lower risk; mitigate; lessen,mitigate risks,mitigate=缓解
+190,mitigate,减少风险,reduce risk; lower risk; minimize risk; lessen,mitigate risks,mitigate=缓解
+191,cut,减少（政策）,slash; trim; reduce; scale back,cut costs,slash=大幅削减
+192,scale back,减少（政策）,cut; slash; trim; reduce,cut costs,slash=大幅削减
+193,slash,减少（政策）,cut; trim; reduce; scale back,cut costs,slash=大幅削减
+194,trim,减少（政策）,cut; slash; reduce; scale back,cut costs,slash=大幅削减
+195,dwindle,减少（生物）,decline; shrink; drop; wane,numbers dwindle,wane=衰退
+196,shrink,减少（生物）,decline; dwindle; drop; wane,numbers dwindle,wane=衰退
+197,wane,减少（生物）,decline; shrink; dwindle; drop,numbers dwindle,wane=衰退
+198,cool,减速,slow; decelerate; ease; moderate,ease pressure,moderate=缓和
+199,decelerate,减速,slow; ease; cool; moderate,ease pressure,moderate=缓和
+200,ease,减速,slow; decelerate; cool; moderate,ease pressure,moderate=缓和
+201,moderate,减速,slow; decelerate; ease; cool,ease pressure,moderate=缓和
+202,arise,出现/发生,occur; happen; take place; emerge,occur → take place,arise=产生
+203,emerge,出现/发生,occur; happen; take place; arise,occur → take place,arise=产生
+204,happen,出现/发生,occur; take place; arise; emerge,occur → take place,arise=产生
+205,occur,出现/发生,happen; take place; arise; emerge,occur → take place,arise=产生
+206,take place,出现/发生,occur; happen; arise; emerge,occur → take place,arise=产生
+207,analyze,分析,examine; assess; evaluate; inspect,analyze results → examine results,inspect 更仔细
+208,examine,分析,analyze; assess; evaluate; inspect,analyze results → examine results,inspect 更仔细
+209,inspect,分析,analyze; examine; assess; evaluate,analyze results → examine results,inspect 更仔细
+210,allocate,分配,assign; distribute; apportion; allot,allocate resources,allocate=分配资源
+211,allot,分配,allocate; assign; distribute; apportion,allocate resources,allocate=分配资源
+212,apportion,分配,allocate; assign; distribute; allot,allocate resources,allocate=分配资源
+213,assign,分配,allocate; distribute; apportion; allot,allocate resources,allocate=分配资源
+214,distribute,分配,allocate; assign; apportion; allot,allocate resources,allocate=分配资源
+215,breakthrough,创新,innovation; invention; novelty; new idea,scientific breakthrough,breakthrough=突破
+216,invention,创新,innovation; breakthrough; novelty; new idea,scientific breakthrough,breakthrough=突破
+217,new idea,创新,innovation; breakthrough; invention; novelty,scientific breakthrough,breakthrough=突破
+218,novelty,创新,innovation; breakthrough; invention; new idea,scientific breakthrough,breakthrough=突破
+219,creativity,创造力,imagination; originality; innovation; inventiveness,boost creativity,originality=原创
+220,imagination,创造力,creativity; originality; innovation; inventiveness,boost creativity,originality=原创
+221,inventiveness,创造力,creativity; imagination; originality; innovation,boost creativity,originality=原创
+222,originality,创造力,creativity; imagination; innovation; inventiveness,boost creativity,originality=原创
+223,profit,利润,gain; earnings; revenue; return,increase profits,revenue=营收
+224,return,利润,profit; gain; earnings; revenue,increase profits,revenue=营收
+225,revenue,利润,profit; gain; earnings; return,increase profits,revenue=营收
+226,create,制造/生产,produce; manufacture; generate; fabricate,generate electricity → produce electricity,manufacture=工业制造
+227,fabricate,制造/生产,produce; manufacture; generate; create,generate electricity → produce electricity,manufacture=工业制造
+228,generate,制造/生产,produce; manufacture; create; fabricate,generate electricity → produce electricity,manufacture=工业制造
+229,manufacture,制造/生产,produce; generate; create; fabricate,generate electricity → produce electricity,manufacture=工业制造
+230,produce,制造/生产,manufacture; generate; create; fabricate,generate electricity → produce electricity,manufacture=工业制造
+231,accelerate,加速,speed up; boost; hasten; quicken,accelerate growth,hasten=加快
+232,hasten,加速,accelerate; speed up; boost; quicken,accelerate growth,hasten=加快
+233,quicken,加速,accelerate; speed up; boost; hasten,accelerate growth,hasten=加快
+234,speed up,加速,accelerate; boost; hasten; quicken,accelerate growth,hasten=加快
+235,cover,包含,include; encompass; embrace; involve,cover a wide range,encompass=涵盖
+236,embrace,包含,include; cover; encompass; involve,cover a wide range,encompass=涵盖
+237,encompass,包含,include; cover; embrace; involve,cover a wide range,encompass=涵盖
+238,comprise,包括,include; contain; involve; incorporate,include X → involve X,comprise=由…组成
+239,contain,包括,include; involve; comprise; incorporate,include X → involve X,comprise=由…组成
+240,include,包括,contain; involve; comprise; incorporate,include X → involve X,comprise=由…组成
+241,incorporate,包括,include; contain; involve; comprise,include X → involve X,comprise=由…组成
+242,involve,包括,include; contain; comprise; incorporate,include X → involve X,comprise=由…组成
+243,coal,化石燃料,fossil fuels; oil; gas; petroleum,rely on fossil fuels,petroleum=石油
+244,fossil fuels,化石燃料,coal; oil; gas; petroleum,rely on fossil fuels,petroleum=石油
+245,gas,化石燃料,fossil fuels; coal; oil; petroleum,rely on fossil fuels,petroleum=石油
+246,oil,化石燃料,fossil fuels; coal; gas; petroleum,rely on fossil fuels,petroleum=石油
+247,petroleum,化石燃料,fossil fuels; coal; oil; gas,rely on fossil fuels,petroleum=石油
+248,breakdown,危机,crisis; emergency; disaster; collapse,economic crisis,breakdown=崩溃
+249,collapse,危机,crisis; emergency; disaster; breakdown,economic crisis,breakdown=崩溃
+250,crisis,危机,emergency; disaster; collapse; breakdown,economic crisis,breakdown=崩溃
+251,disaster,危机,crisis; emergency; collapse; breakdown,economic crisis,breakdown=崩溃
+252,emergency,危机,crisis; disaster; collapse; breakdown,economic crisis,breakdown=崩溃
+253,driver,原因,reason; cause; factor; source,a reason for → a factor behind,driver=驱动因素
+254,factor,原因,reason; cause; driver; source,a reason for → a factor behind,driver=驱动因素
+255,reason,原因,cause; factor; driver; source,a reason for → a factor behind,driver=驱动因素
+256,source,原因,reason; cause; factor; driver,a reason for → a factor behind,driver=驱动因素
+257,be against,反对,oppose; object to; resist; reject,oppose a plan → reject a plan,resist=抵制
+258,object to,反对,oppose; resist; reject; be against,oppose a plan → reject a plan,resist=抵制
+259,oppose,反对,object to; resist; reject; be against,oppose a plan → reject a plan,resist=抵制
+260,reject,反对,oppose; object to; resist; be against,oppose a plan → reject a plan,resist=抵制
+261,resist,反对,oppose; object to; reject; be against,oppose a plan → reject a plan,resist=抵制
+262,contradict,反驳,refute; disprove; counter; challenge,refute an argument,contradict=与…矛盾
+263,counter,反驳,refute; disprove; challenge; contradict,refute an argument,contradict=与…矛盾
+264,disprove,反驳,refute; counter; challenge; contradict,refute an argument,contradict=与…矛盾
+265,advance,发展,develop; evolve; progress; expand,technology advances → progresses,evolve=演化
+266,develop,发展,evolve; advance; progress; expand,technology advances → progresses,evolve=演化
+267,evolve,发展,develop; advance; progress; expand,technology advances → progresses,evolve=演化
+268,progress,发展,develop; evolve; advance; expand,technology advances → progresses,evolve=演化
+269,discover,发现,find; uncover; detect; identify,discover evidence,uncover=揭示
+270,find,发现,discover; uncover; detect; identify,discover evidence,uncover=揭示
+271,uncover,发现,find; discover; detect; identify,discover evidence,uncover=揭示
+272,during,发生在…期间,throughout; over; in the course of; while,throughout the year,
+273,in the course of,发生在…期间,during; throughout; over; while,throughout the year,
+274,throughout,发生在…期间,during; over; in the course of; while,throughout the year,
+275,while,发生在…期间,during; throughout; over; in the course of,throughout the year,
+276,displace,取代,replace; substitute; supersede; take the place of,replace A with B,supersede=取代
+277,replace,取代,substitute; supersede; take the place of; displace,replace A with B,supersede=取代
+278,substitute,取代,replace; supersede; take the place of; displace,replace A with B,supersede=取代
+279,supersede,取代,replace; substitute; take the place of; displace,replace A with B,supersede=取代
+280,take the place of,取代,replace; substitute; supersede; displace,replace A with B,supersede=取代
+281,dramatic,变化幅度,sharp; significant; substantial; marked,a sharp increase,marked=显著
+282,marked,变化幅度,dramatic; sharp; significant; substantial,a sharp increase,marked=显著
+283,sharp,变化幅度,dramatic; significant; substantial; marked,a sharp increase,marked=显著
+284,convert,变化（动词）,change; shift; transform; switch,switch to renewable energy,convert=转化
+285,switch,变化（动词）,change; shift; transform; convert,switch to renewable energy,convert=转化
+286,transform,变化（动词）,change; shift; convert; switch,switch to renewable energy,convert=转化
+287,transformation,变化（名词）,change; shift; transition; variation,a shift in X → a change in X,transition=转变
+288,transition,变化（名词）,change; shift; transformation; variation,a shift in X → a change in X,transition=转变
+289,variation,变化（名词）,change; shift; transition; transformation,a shift in X → a change in X,transition=转变
+290,as long as,只要/如果,if; provided that; on condition that; assuming,as long as…,provided that=前提是
+291,assuming,只要/如果,if; provided that; as long as; on condition that,as long as…,provided that=前提是
+292,if,只要/如果,provided that; as long as; on condition that; assuming,as long as…,provided that=前提是
+293,on condition that,只要/如果,if; provided that; as long as; assuming,as long as…,provided that=前提是
+294,provided that,只要/如果,if; as long as; on condition that; assuming,as long as…,provided that=前提是
+295,eco-friendly,可持续,sustainable; green; renewable; low-carbon,sustainable development,renewable=可再生
+296,green,可持续,sustainable; eco-friendly; renewable; low-carbon,sustainable development,renewable=可再生
+297,low-carbon,可持续,sustainable; eco-friendly; green; renewable,sustainable development,renewable=可再生
+298,renewable,可持续,sustainable; eco-friendly; green; low-carbon,sustainable development,renewable=可再生
+299,sustainable,可持续,eco-friendly; green; renewable; low-carbon,sustainable development,renewable=可再生
+300,accessible,可用的,available; obtainable; reachable; at hand,accessible services,at hand=手边
+301,at hand,可用的,available; accessible; obtainable; reachable,accessible services,at hand=手边
+302,available,可用的,accessible; obtainable; reachable; at hand,accessible services,at hand=手边
+303,obtainable,可用的,available; accessible; reachable; at hand,accessible services,at hand=手边
+304,reachable,可用的,available; accessible; obtainable; at hand,accessible services,at hand=手边
+305,likelihood,可能性,probability; chance; odds; possibility,high probability,odds=几率
+306,odds,可能性,likelihood; probability; chance; possibility,high probability,odds=几率
+307,probability,可能性,likelihood; chance; odds; possibility,high probability,odds=几率
+308,feasible,可能的,possible; likely; probable; plausible,it is likely that…,feasible=可行
+309,likely,可能的,possible; probable; plausible; feasible,it is likely that…,feasible=可行
+310,plausible,可能的,possible; likely; probable; feasible,it is likely that…,feasible=可行
+311,possible,可能的,likely; probable; plausible; feasible,it is likely that…,feasible=可行
+312,probable,可能的,possible; likely; plausible; feasible,it is likely that…,feasible=可行
+313,accept,同意,agree; approve; consent; be in favor,approve of → accept,consent=正式同意
+314,agree,同意,accept; approve; consent; be in favor,approve of → accept,consent=正式同意
+315,approve,同意,agree; accept; consent; be in favor,approve of → accept,consent=正式同意
+316,be in favor,同意,agree; accept; approve; consent,approve of → accept,consent=正式同意
+317,consent,同意,agree; accept; approve; be in favor,approve of → accept,consent=正式同意
+318,recycle,回收,reuse; reprocess; repurpose; upcycle,recycle waste,repurpose=改作他用
+319,reprocess,回收,recycle; reuse; repurpose; upcycle,recycle waste,repurpose=改作他用
+320,repurpose,回收,recycle; reuse; reprocess; upcycle,recycle waste,repurpose=改作他用
+321,reuse,回收,recycle; reprocess; repurpose; upcycle,recycle waste,repurpose=改作他用
+322,upcycle,回收,recycle; reuse; reprocess; repurpose,recycle waste,repurpose=改作他用
+323,as a result,因此,therefore; thus; consequently; hence,therefore → thus,hence=因此
+324,consequently,因此,therefore; thus; as a result; hence,therefore → thus,hence=因此
+325,hence,因此,therefore; thus; consequently; as a result,therefore → thus,hence=因此
+326,therefore,因此,thus; consequently; as a result; hence,therefore → thus,hence=因此
+327,thus,因此,therefore; consequently; as a result; hence,therefore → thus,hence=因此
+328,aspect,因素,factor; variable; dimension; criterion,a key factor → a crucial variable,variable=变量
+329,criterion,因素,factor; aspect; variable; dimension,a key factor → a crucial variable,variable=变量
+330,dimension,因素,factor; aspect; variable; criterion,a key factor → a crucial variable,variable=变量
+331,variable,因素,factor; aspect; dimension; criterion,a key factor → a crucial variable,variable=变量
+332,ahead of,在…之前,before; prior to; earlier than; preceding,prior to → before,preceding=之前的
+333,before,在…之前,prior to; earlier than; preceding; ahead of,prior to → before,preceding=之前的
+334,earlier than,在…之前,before; prior to; preceding; ahead of,prior to → before,preceding=之前的
+335,preceding,在…之前,before; prior to; earlier than; ahead of,prior to → before,preceding=之前的
+336,prior to,在…之前,before; earlier than; preceding; ahead of,prior to → before,preceding=之前的
+337,after,在…之后,following; subsequent to; later; afterwards,subsequent to,subsequent=随后的
+338,afterwards,在…之后,after; following; subsequent to; later,subsequent to,subsequent=随后的
+339,following,在…之后,after; subsequent to; later; afterwards,subsequent to,subsequent=随后的
+340,later,在…之后,after; following; subsequent to; afterwards,subsequent to,subsequent=随后的
+341,subsequent to,在…之后,after; following; later; afterwards,subsequent to,subsequent=随后的
+342,city growth,城市化,urbanization; urban expansion; migration to cities; urban development,urbanization → city growth,migration=迁移
+343,migration to cities,城市化,urbanization; city growth; urban expansion; urban development,urbanization → city growth,migration=迁移
+344,urban development,城市化,urbanization; city growth; urban expansion; migration to cities,urbanization → city growth,migration=迁移
+345,urban expansion,城市化,urbanization; city growth; migration to cities; urban development,urbanization → city growth,migration=迁移
+346,urbanization,城市化,city growth; urban expansion; migration to cities; urban development,urbanization → city growth,migration=迁移
+347,basic,基础的/根本的,fundamental; essential; core; underlying,fundamental → essential/core,underlying=潜在的根本原因
+348,core,基础的/根本的,fundamental; basic; essential; underlying,fundamental → essential/core,underlying=潜在的根本原因
+349,essential,基础的/根本的,fundamental; basic; core; underlying,fundamental → essential/core,underlying=潜在的根本原因
+350,fundamental,基础的/根本的,basic; essential; core; underlying,fundamental → essential/core,underlying=潜在的根本原因
+351,underlying,基础的/根本的,fundamental; basic; essential; core,fundamental → essential/core,underlying=潜在的根本原因
+352,infrastructure,基础设施,public facilities; transport network; utilities; systems,improve infrastructure,utilities=水电等公用设施
+353,public facilities,基础设施,infrastructure; transport network; utilities; systems,improve infrastructure,utilities=水电等公用设施
+354,systems,基础设施,infrastructure; public facilities; transport network; utilities,improve infrastructure,utilities=水电等公用设施
+355,transport network,基础设施,infrastructure; public facilities; utilities; systems,improve infrastructure,utilities=水电等公用设施
+356,utilities,基础设施,infrastructure; public facilities; transport network; systems,improve infrastructure,utilities=水电等公用设施
+357,climb,增加,increase; rise; grow; expand; surge,increase → rise/go up,surge=猛增
+358,expand,增加,increase; rise; grow; climb; surge,increase → rise/go up,surge=猛增
+359,grow,增加,increase; rise; climb; expand; surge,increase → rise/go up,surge=猛增
+360,increase,增加,rise; grow; climb; expand; surge,increase → rise/go up,surge=猛增
+361,rise,增加,increase; grow; climb; expand; surge,increase → rise/go up,surge=猛增
+362,surge,增加,increase; rise; grow; climb; expand,increase → rise/go up,surge=猛增
+363,engage,增加参与,participate; take part; get involved; join,participate in,engage=参与
+364,get involved,增加参与,participate; take part; engage; join,participate in,engage=参与
+365,join,增加参与,participate; take part; engage; get involved,participate in,engage=参与
+366,participate,增加参与,take part; engage; get involved; join,participate in,engage=参与
+367,take part,增加参与,participate; engage; get involved; join,participate in,engage=参与
+368,effective,增加效率,efficient; productive; high-performing; streamlined,an efficient system,streamlined=精简高效
+369,efficient,增加效率,productive; effective; high-performing; streamlined,an efficient system,streamlined=精简高效
+370,high-performing,增加效率,efficient; productive; effective; streamlined,an efficient system,streamlined=精简高效
+371,productive,增加效率,efficient; effective; high-performing; streamlined,an efficient system,streamlined=精简高效
+372,streamlined,增加效率,efficient; productive; effective; high-performing,an efficient system,streamlined=精简高效
+373,double,增加数量,multiply; treble; grow; expand,numbers double,treble=变三倍
+374,multiply,增加数量,double; treble; grow; expand,numbers double,treble=变三倍
+375,treble,增加数量,multiply; double; grow; expand,numbers double,treble=变三倍
+376,boost risk,增加风险,raise risk; increase risk; heighten risk; expose,heighten the risk,expose=使暴露于
+377,expose,增加风险,raise risk; increase risk; heighten risk; boost risk,heighten the risk,expose=使暴露于
+378,heighten risk,增加风险,raise risk; increase risk; boost risk; expose,heighten the risk,expose=使暴露于
+379,increase risk,增加风险,raise risk; heighten risk; boost risk; expose,heighten the risk,expose=使暴露于
+380,raise risk,增加风险,increase risk; heighten risk; boost risk; expose,heighten the risk,expose=使暴露于
+381,channel,增加（投入）,invest; pour in; pump; inject,inject money into…,inject=注入资金
+382,inject,增加（投入）,invest; pour in; channel; pump,inject money into…,inject=注入资金
+383,invest,增加（投入）,pour in; channel; pump; inject,inject money into…,inject=注入资金
+384,pour in,增加（投入）,invest; channel; pump; inject,inject money into…,inject=注入资金
+385,pump,增加（投入）,invest; pour in; channel; inject,inject money into…,inject=注入资金
+386,expansion,增长（名词）,growth; increase; rise; upturn,a rise in → an increase in,upturn=回升
+387,growth,增长（名词）,increase; expansion; rise; upturn,a rise in → an increase in,upturn=回升
+388,upturn,增长（名词）,growth; increase; expansion; rise,a rise in → an increase in,upturn=回升
+389,argue,声称,claim; maintain; assert; contend,researchers claim → researchers argue,assert=断言
+390,assert,声称,claim; argue; maintain; contend,researchers claim → researchers argue,assert=断言
+391,claim,声称,argue; maintain; assert; contend,researchers claim → researchers argue,assert=断言
+392,contend,声称,claim; argue; maintain; assert,researchers claim → researchers argue,assert=断言
+393,complex,复杂,complicated; intricate; sophisticated; elaborate,a complex system,intricate=错综复杂
+394,complicated,复杂,complex; intricate; sophisticated; elaborate,a complex system,intricate=错综复杂
+395,elaborate,复杂,complex; complicated; intricate; sophisticated,a complex system,intricate=错综复杂
+396,intricate,复杂,complex; complicated; sophisticated; elaborate,a complex system,intricate=错综复杂
+397,sophisticated,复杂,complex; complicated; intricate; elaborate,a complex system,intricate=错综复杂
+398,about,大约,approximately; roughly; around; nearly,approximately → roughly,nearly=接近
+399,approximately,大约,about; roughly; around; nearly,approximately → roughly,nearly=接近
+400,around,大约,about; approximately; roughly; nearly,approximately → roughly,nearly=接近
+401,nearly,大约,about; approximately; roughly; around,approximately → roughly,nearly=接近
+402,roughly,大约,about; approximately; around; nearly,approximately → roughly,nearly=接近
+403,a great deal of,大量的,a large amount of; substantial; considerable; plentiful,a large amount of → substantial,substantial=相当可观
+404,a large amount of,大量的,a great deal of; substantial; considerable; plentiful,a large amount of → substantial,substantial=相当可观
+405,considerable,大量的,a large amount of; a great deal of; substantial; plentiful,a large amount of → substantial,substantial=相当可观
+406,plentiful,大量的,a large amount of; a great deal of; substantial; considerable,a large amount of → substantial,substantial=相当可观
+407,substantial,大量的,a large amount of; a great deal of; considerable; plentiful,a large amount of → substantial,substantial=相当可观
+408,joblessness,失业,unemployment; lack of work; out of work; redundancy,reduce unemployment,redundancy=裁员
+409,lack of work,失业,unemployment; joblessness; out of work; redundancy,reduce unemployment,redundancy=裁员
+410,out of work,失业,unemployment; joblessness; lack of work; redundancy,reduce unemployment,redundancy=裁员
+411,redundancy,失业,unemployment; joblessness; lack of work; out of work,reduce unemployment,redundancy=裁员
+412,unemployment,失业,joblessness; lack of work; out of work; redundancy,reduce unemployment,redundancy=裁员
+413,broadcast,媒体,media; press; news; journalism,social media,press=新闻界
+414,journalism,媒体,media; press; news; broadcast,social media,press=新闻界
+415,media,媒体,press; news; journalism; broadcast,social media,press=新闻界
+416,news,媒体,media; press; journalism; broadcast,social media,press=新闻界
+417,press,媒体,media; news; journalism; broadcast,social media,press=新闻界
+418,learner,学生,student; pupil; undergraduate; trainee,student performance,pupil=中小学生
+419,pupil,学生,student; learner; undergraduate; trainee,student performance,pupil=中小学生
+420,student,学生,pupil; learner; undergraduate; trainee,student performance,pupil=中小学生
+421,trainee,学生,student; pupil; learner; undergraduate,student performance,pupil=中小学生
+422,undergraduate,学生,student; pupil; learner; trainee,student performance,pupil=中小学生
+423,protection,安全,safety; security; stability; safeguard,public safety,security=安全/保障
+424,safety,安全,security; protection; stability; safeguard,public safety,security=安全/保障
+425,security,安全,safety; protection; stability; safeguard,public safety,security=安全/保障
+426,stability,安全,safety; security; protection; safeguard,public safety,security=安全/保障
+427,apply,实施,implement; carry out; enforce; execute,implement a policy,enforce=强制执行
+428,carry out,实施,implement; enforce; apply; execute,implement a policy,enforce=强制执行
+429,enforce,实施,implement; carry out; apply; execute,implement a policy,enforce=强制执行
+430,execute,实施,implement; carry out; enforce; apply,implement a policy,enforce=强制执行
+431,implement,实施,carry out; enforce; apply; execute,implement a policy,enforce=强制执行
+432,experiment,实验,trial; test; pilot; simulation,conduct a trial → run a test,pilot=试点
+433,pilot,实验,experiment; trial; test; pilot,conduct a trial → run a test,pilot=试点
+434,simulation,实验,experiment; trial; test; pilot,conduct a trial → run a test,pilot=试点
+435,test,实验,experiment; trial; pilot; simulation,conduct a trial → run a test,pilot=试点
+436,trial,实验,experiment; test; pilot; simulation,conduct a trial → run a test,pilot=试点
+437,bring about,导致,cause; lead to; result in; trigger; give rise to,A causes B → A leads to B,result in=导致结果
+438,cause,导致,lead to; result in; trigger; bring about; give rise to,A causes B → A leads to B,result in=导致结果
+439,give rise to,导致,cause; lead to; result in; trigger; bring about,A causes B → A leads to B,result in=导致结果
+440,lead to,导致,cause; result in; trigger; bring about; give rise to,A causes B → A leads to B,result in=导致结果
+441,result in,导致,cause; lead to; trigger; bring about; give rise to,A causes B → A leads to B,result in=导致结果
+442,trigger,导致,cause; lead to; result in; bring about; give rise to,A causes B → A leads to B,result in=导致结果
+443,insignificant,小的/少的,small; minor; limited; scarce,small → minor/limited,scarce=稀缺
+444,limited,小的/少的,small; minor; scarce; insignificant,small → minor/limited,scarce=稀缺
+445,minor,小的/少的,small; limited; scarce; insignificant,small → minor/limited,scarce=稀缺
+446,scarce,小的/少的,small; minor; limited; insignificant,small → minor/limited,scarce=稀缺
+447,small,小的/少的,minor; limited; scarce; insignificant,small → minor/limited,scarce=稀缺
+448,career,工作,job; work; employment; occupation,create jobs,occupation=职业
+449,employment,工作,job; work; occupation; career,create jobs,occupation=职业
+450,job,工作,work; employment; occupation; career,create jobs,occupation=职业
+451,occupation,工作,job; work; employment; career,create jobs,occupation=职业
+452,work,工作,job; employment; occupation; career,create jobs,occupation=职业
+453,earnings,工资,salary; wage; pay; income,low wages,earnings=收入
+454,income,工资,salary; wage; pay; earnings,low wages,earnings=收入
+455,pay,工资,salary; wage; income; earnings,low wages,earnings=收入
+456,salary,工资,wage; pay; income; earnings,low wages,earnings=收入
+457,wage,工资,salary; pay; income; earnings,low wages,earnings=收入
+458,aid,帮助,help; assist; support; facilitate,facilitate learning,facilitate=促进
+459,assist,帮助,help; aid; support; facilitate,facilitate learning,facilitate=促进
+460,facilitate,帮助,help; assist; aid; support,facilitate learning,facilitate=促进
+461,help,帮助,assist; aid; support; facilitate,facilitate learning,facilitate=促进
+462,average,平均,mean; typical; standard; norm,on average,norm=常态
+463,mean,平均,average; typical; standard; norm,on average,norm=常态
+464,norm,平均,average; mean; typical; standard,on average,norm=常态
+465,advertising,广告,promotion; marketing; publicity; campaign,advertising campaign,publicity=宣传
+466,campaign,广告,advertising; promotion; marketing; publicity,advertising campaign,publicity=宣传
+467,marketing,广告,advertising; promotion; publicity; campaign,advertising campaign,publicity=宣传
+468,promotion,广告,advertising; marketing; publicity; campaign,advertising campaign,publicity=宣传
+469,publicity,广告,advertising; promotion; marketing; campaign,advertising campaign,publicity=宣传
+470,garbage,废物,waste; rubbish; trash; litter,reduce waste,litter=乱扔的垃圾
+471,litter,废物,waste; rubbish; garbage; trash,reduce waste,litter=乱扔的垃圾
+472,rubbish,废物,waste; garbage; trash; litter,reduce waste,litter=乱扔的垃圾
+473,trash,废物,waste; rubbish; garbage; litter,reduce waste,litter=乱扔的垃圾
+474,waste,废物,rubbish; garbage; trash; litter,reduce waste,litter=乱扔的垃圾
+475,establish,建立/创建,set up; create; found; launch,establish a system,found=创立
+476,found,建立/创建,establish; set up; create; launch,establish a system,found=创立
+477,launch,建立/创建,establish; set up; create; found,establish a system,found=创立
+478,set up,建立/创建,establish; create; found; launch,establish a system,found=创立
+479,begin,开始,start; initiate; launch; commence,initiate a project,commence=开始(正式)
+480,commence,开始,begin; start; initiate; launch,initiate a project,commence=开始(正式)
+481,initiate,开始,begin; start; launch; commence,initiate a project,commence=开始(正式)
+482,start,开始,begin; initiate; launch; commence,initiate a project,commence=开始(正式)
+483,appear,开始出现,emerge; surface; arise; come up,a problem emerges,surface=浮现
+484,come up,开始出现,emerge; appear; surface; arise,a problem emerges,surface=浮现
+485,surface,开始出现,emerge; appear; arise; come up,a problem emerges,surface=浮现
+486,compel,强制,force; oblige; require; mandate,mandate changes,compel=迫使
+487,force,强制,compel; oblige; require; mandate,mandate changes,compel=迫使
+488,mandate,强制,force; compel; oblige; require,mandate changes,compel=迫使
+489,oblige,强制,force; compel; require; mandate,mandate changes,compel=迫使
+490,extreme,强烈,strong; intense; powerful; severe,severe weather,severe=严重
+491,intense,强烈,strong; powerful; severe; extreme,severe weather,severe=严重
+492,powerful,强烈,strong; intense; severe; extreme,severe weather,severe=严重
+493,severe,强烈,strong; intense; powerful; extreme,severe weather,severe=严重
+494,strong,强烈,intense; powerful; severe; extreme,severe weather,severe=严重
+495,emphasize,强调,highlight; stress; underline; point out,highlight X → emphasize X,underline=强调
+496,highlight,强调,emphasize; stress; underline; point out,highlight X → emphasize X,underline=强调
+497,point out,强调,emphasize; highlight; stress; underline,highlight X → emphasize X,underline=强调
+498,stress,强调,emphasize; highlight; underline; point out,highlight X → emphasize X,underline=强调
+499,underline,强调,emphasize; highlight; stress; point out,highlight X → emphasize X,underline=强调
+500,as,强调因果,because; since; due to; owing to,due to → because of,owing to=由于
+501,because,强调因果,since; as; due to; owing to,due to → because of,owing to=由于
+502,due to,强调因果,because; since; as; owing to,due to → because of,owing to=由于
+503,owing to,强调因果,because; since; as; due to,due to → because of,owing to=由于
+504,since,强调因果,because; as; due to; owing to,due to → because of,owing to=由于
+505,in detail,详细地,in depth; thoroughly; comprehensively; at length,describe/explain in detail,detail=细节
+506,in particular,尤其/具体地（强调）,specifically; particularly; in detail; to be precise,specifically → to be precise,particularly=尤其
+507,particularly,尤其/具体地（强调）,in particular; specifically; in detail; to be precise,specifically → to be precise,particularly=尤其
+508,specifically,尤其/具体地（强调）,in particular; particularly; in detail; to be precise,specifically → to be precise,particularly=尤其
+509,to be precise,尤其/具体地（强调）,in particular; specifically; particularly; in detail,specifically → to be precise,particularly=尤其
+510,affect,影响,influence; impact; shape; alter,affect X → influence/impact X,impact 可作名词/动词
+511,impact,影响,affect; influence; shape; alter,affect X → influence/impact X,impact 可作名词/动词
+512,influence,影响,affect; impact; shape; alter,affect X → influence/impact X,impact 可作名词/动词
+513,shape,影响,affect; influence; impact; alter,affect X → influence/impact X,impact 可作名词/动词
+514,accelerated,快速的,rapid; fast; quick; swift,rapid growth → fast/quick growth,accelerated=加速的
+515,fast,快速的,rapid; quick; swift; accelerated,rapid growth → fast/quick growth,accelerated=加速的
+516,quick,快速的,rapid; fast; swift; accelerated,rapid growth → fast/quick growth,accelerated=加速的
+517,rapid,快速的,fast; quick; swift; accelerated,rapid growth → fast/quick growth,accelerated=加速的
+518,swift,快速的,rapid; fast; quick; accelerated,rapid growth → fast/quick growth,accelerated=加速的
+519,attitude,态度,view; stance; opinion; perspective,public opinion,stance=立场
+520,opinion,态度,attitude; view; stance; perspective,public opinion,stance=立场
+521,perspective,态度,attitude; view; stance; opinion,public opinion,stance=立场
+522,stance,态度,attitude; view; opinion; perspective,public opinion,stance=立场
+523,view,态度,attitude; stance; opinion; perspective,public opinion,stance=立场
+524,recap,总结,summarize; conclude; wrap up; outline,summarize findings,recap=回顾
+525,summarize,总结,conclude; wrap up; outline; recap,summarize findings,recap=回顾
+526,wrap up,总结,summarize; conclude; outline; recap,summarize findings,recap=回顾
+527,aggravate,恶化,worsen; deteriorate; decline; degrade,conditions deteriorate → worsen,aggravate=加剧
+528,degrade,恶化,worsen; deteriorate; decline; aggravate,conditions deteriorate → worsen,aggravate=加剧
+529,deteriorate,恶化,worsen; decline; degrade; aggravate,conditions deteriorate → worsen,aggravate=加剧
+530,worsen,恶化,deteriorate; decline; degrade; aggravate,conditions deteriorate → worsen,aggravate=加剧
+531,cost,成本,expense; price; expenditure; outlay,high costs,expenditure=支出
+532,expenditure,成本,cost; expense; price; outlay,high costs,expenditure=支出
+533,expense,成本,cost; price; expenditure; outlay,high costs,expenditure=支出
+534,outlay,成本,cost; expense; price; expenditure,high costs,expenditure=支出
+535,price,成本,cost; expense; expenditure; outlay,high costs,expenditure=支出
+536,advancement,技术,technology; tech; innovation; engineering,technological innovation,advancement=进步
+537,engineering,技术,technology; tech; innovation; advancement,technological innovation,advancement=进步
+538,innovation,技术,technology; tech; engineering; advancement,technological innovation,advancement=进步`;
+
+            // ============================================================
+            //  2. 解析
+            // ============================================================
+            function parseCSV(text) {
+                try {
+                    const lines = text.trim().split('\n');
+                    const data = [];
+                    for (let line of lines) {
+                        if (!line.trim()) continue;
+                        const parts = line.split(',').map(s => s.trim());
+                        if (parts.length >= 2) {
+                            data.push({
+                                id: parts[0],
+                                word: parts[1] || '未知',
+                                meaning: parts[2] || '',
+                                synonyms: parts[3] ? parts[3].split(';').map(s => s.trim()).filter(s => s) : [],
+                                template: parts[4] || '',
+                                hint: parts[5] || ''
+                            });
+                        }
+                    }
+                    return data;
+                } catch (_) { return []; }
+            }
+
+            const vocabData = parseCSV(rawDataString);
+            const TOTAL = vocabData.length;
+
+            // ============================================================
+            //  3. 状态管理
+            // ============================================================
+            const STORAGE_KEY = 'ielts538_state';
+
+            function getDefaultState() {
+                return { learnIndex: 0, wrongIds: [], mode: 'learn' };
+            }
+
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        const def = getDefaultState();
+                        const merged = { ...def, ...parsed };
+                        if (merged.learnIndex >= TOTAL) merged.learnIndex = TOTAL - 1;
+                        if (merged.learnIndex < 0) merged.learnIndex = 0;
+                        return merged;
+                    }
+                } catch (_) {}
+                return getDefaultState();
+            }
+
+            function saveState(s) {
+                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (_) {}
+            }
+
+            let state = loadState();
+            let currentMode = state.mode || 'learn';
+            let reviewQueue = [];
+            let currentItem = null;
+            let isRevealed = false;
+
+            // ============================================================
+            //  4. DOM
+            // ============================================================
+            const $ = id => document.getElementById(id);
+            const dom = {
+                card: $('card'),
+                word: $('word-display'),
+                meaning: $('meaning-display'),
+                synonym: $('synonym-display'),
+                templateBox: $('template-box'),
+                templateDisplay: $('template-display'),
+                hintBox: $('hint-box'),
+                hintDisplay: $('hint-display'),
+                btnReveal: $('btn-reveal'),
+                btnGroup: $('btn-grade-group'),
+                btnForgot: $('btn-forgot'),
+                btnKnow: $('btn-know'),
+                progressText: $('progress-text'),
+                progressBar: $('progress-bar'),
+                finishScreen: $('finish-screen'),
+                emptyReview: $('empty-review'),
+                errorScreen: $('error-screen'),
+                badgeWrong: $('badge-wrong'),
+                modeToggle: $('mode-toggle'),
+                btnBackToLearn: $('btn-back-to-learn'),
+                controlsArea: $('controls-area'),
+            };
+
+            // ============================================================
+            //  5. 渲染
+            // ============================================================
+            function updateBadge() {
+                const count = state.wrongIds.length;
+                if (count > 0) {
+                    dom.badgeWrong.textContent = count;
+                    dom.badgeWrong.classList.remove('hidden');
+                } else {
+                    dom.badgeWrong.classList.add('hidden');
+                }
+            }
+
+            function updateProgress(pos, total) {
+                const pct = Math.min(100, (pos / total) * 100);
+                dom.progressBar.style.width = `${pct}%`;
+            }
+
+            function fillCard(item) {
+                if (!item) {
+                    dom.word.textContent = '数据错误';
+                    dom.meaning.textContent = '请刷新';
+                    dom.synonym.innerHTML = '';
+                    dom.templateBox.style.display = 'none';
+                    dom.hintBox.style.display = 'none';
+                    return;
+                }
+                dom.word.textContent = item.word;
+                dom.meaning.textContent = item.meaning;
+                dom.synonym.innerHTML = item.synonyms.map(s => `<span>• ${s}</span>`).join('');
+
+                if (item.template) {
+                    dom.templateDisplay.textContent = item.template;
+                    dom.templateBox.style.display = 'block';
+                } else {
+                    dom.templateBox.style.display = 'none';
+                }
+
+                if (item.hint) {
+                    dom.hintDisplay.textContent = item.hint;
+                    dom.hintBox.style.display = 'block';
+                } else {
+                    dom.hintBox.style.display = 'none';
+                }
+
+                dom.card.classList.remove('revealed');
+                dom.btnReveal.classList.remove('hidden');
+                dom.btnGroup.classList.add('hidden');
+                isRevealed = false;
+            }
+
+            function render() {
+                dom.finishScreen.style.display = 'none';
+                dom.emptyReview.style.display = 'none';
+                dom.errorScreen.style.display = 'none';
+                dom.card.style.display = 'flex';
+                dom.controlsArea.style.display = 'flex';
+
+                if (TOTAL === 0) {
+                    dom.errorScreen.style.display = 'block';
+                    dom.card.style.display = 'none';
+                    dom.controlsArea.style.display = 'none';
+                    dom.progressText.textContent = '0 / 0';
+                    updateProgress(0, 1);
+                    return;
+                }
+
+                dom.card.classList.toggle('review-mode', currentMode === 'review');
+
+                const opts = dom.modeToggle.querySelectorAll('.mode-option');
+                opts.forEach(el => {
+                    el.classList.toggle('active', el.dataset.mode === currentMode);
+                });
+
+                // 学习完成
+                if (currentMode === 'learn' && state.learnIndex >= TOTAL) {
+                    dom.finishScreen.style.display = 'block';
+                    dom.card.style.display = 'none';
+                    dom.controlsArea.style.display = 'none';
+                    dom.progressText.textContent = `${TOTAL} / ${TOTAL}`;
+                    updateProgress(TOTAL, TOTAL);
+                    return;
+                }
+
+                // 复习模式
+                if (currentMode === 'review') {
+                    const unique = [];
+                    const seen = new Set();
+                    for (const id of state.wrongIds) {
+                        if (!seen.has(id)) { seen.add(id);
+                            unique.push(id); }
+                    }
+                    reviewQueue = unique;
+
+                    if (reviewQueue.length === 0) {
+                        dom.card.style.display = 'none';
+                        dom.emptyReview.style.display = 'block';
+                        dom.controlsArea.style.display = 'none';
+                        dom.progressText.textContent = '复习 0 / 0';
+                        updateProgress(0, 1);
+                        updateBadge();
+                        return;
+                    }
+
+                    const firstId = reviewQueue[0];
+                    const item = vocabData.find(d => d.id === firstId);
+                    if (!item) {
+                        state.wrongIds = state.wrongIds.filter(id => id !== firstId);
+                        saveState(state);
+                        render();
+                        return;
+                    }
+                    currentItem = item;
+                    fillCard(item);
+                    dom.progressText.textContent = `复习 1 / ${reviewQueue.length}`;
+                    updateProgress(1, reviewQueue.length);
+                    updateBadge();
+                    return;
+                }
+
+                // 学习模式
+                const idx = state.learnIndex;
+                if (idx >= TOTAL) { render(); return; }
+                const item = vocabData[idx];
+                if (!item) { state.learnIndex = 0;
+                    saveState(state);
+                    render(); return; }
+                currentItem = item;
+                fillCard(item);
+                dom.progressText.textContent = `${idx + 1} / ${TOTAL}`;
+                updateProgress(idx + 1, TOTAL);
+                updateBadge();
+            }
+
+            function revealAnswer() {
+                if (isRevealed) return;
+                dom.card.classList.add('revealed');
+                dom.btnReveal.classList.add('hidden');
+                dom.btnGroup.classList.remove('hidden');
+                isRevealed = true;
+            }
+
+            // ============================================================
+            //  6. 交互
+            // ============================================================
+            function handleKnow() {
+                if (!currentItem) return;
+                const id = currentItem.id;
+                if (currentMode === 'learn') {
+                    state.learnIndex++;
+                    saveState(state);
+                    render();
+                } else {
+                    state.wrongIds = state.wrongIds.filter(wid => wid !== id);
+                    saveState(state);
+                    render();
+                }
+            }
+
+            function handleForgot() {
+                if (!currentItem) return;
+                const id = currentItem.id;
+                if (currentMode === 'learn') {
+                    if (!state.wrongIds.includes(id)) state.wrongIds.push(id);
+                    state.learnIndex++;
+                    saveState(state);
+                    render();
+                } else {
+                    if (!state.wrongIds.includes(id)) {
+                        state.wrongIds.push(id);
+                    } else {
+                        state.wrongIds = state.wrongIds.filter(wid => wid !== id);
+                        state.wrongIds.push(id);
+                    }
+                    saveState(state);
+                    render();
+                }
+            }
+
+            function switchMode(mode) {
+                if (mode === currentMode) return;
+                currentMode = mode;
+                state.mode = mode;
+                saveState(state);
+                render();
+            }
+
+            // ============================================================
+            //  7. 事件绑定
+            // ============================================================
+            // 查看答案（多种触发方式）
+            dom.btnReveal.addEventListener('click', revealAnswer);
+            dom.btnReveal.addEventListener('touchstart', function(e) {
+                // 防止双击缩放干扰
+            }, { passive: true });
+
+            // 卡片点击查看答案（排除按钮区域）
+            dom.card.addEventListener('click', function(e) {
+                if (e.target.closest('.btn') || e.target.closest('.mode-toggle')) return;
+                if (!isRevealed) revealAnswer();
+            });
+
+            // 记住 / 忘记
+            dom.btnKnow.addEventListener('click', handleKnow);
+            dom.btnKnow.addEventListener('touchstart', function(e) { /* 防干扰 */ }, { passive: true });
+
+            dom.btnForgot.addEventListener('click', handleForgot);
+            dom.btnForgot.addEventListener('touchstart', function(e) { /* 防干扰 */ }, { passive: true });
+
+            dom.btnBackToLearn.addEventListener('click', function() {
+                if (currentMode !== 'learn') switchMode('learn');
+                else render();
+            });
+
+            // 模式切换
+            dom.modeToggle.addEventListener('click', function(e) {
+                const opt = e.target.closest('.mode-option');
+                if (!opt) return;
+                const mode = opt.dataset.mode;
+                if (mode && mode !== currentMode) switchMode(mode);
+            });
+
+            // 键盘快捷键 (桌面/外接键盘)
+            document.addEventListener('keydown', function(e) {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                const isFinish = dom.finishScreen.style.display === 'block';
+                const isEmpty = dom.emptyReview.style.display === 'block';
+                const isError = dom.errorScreen.style.display === 'block';
+                if (isFinish || isEmpty || isError) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (isFinish || isError) location.reload();
+                        else dom.btnBackToLearn.click();
+                    }
+                    return;
+                }
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    if (!isRevealed) revealAnswer();
+                } else if (e.key === '1' || e.key === 'ArrowLeft') {
+                    if (isRevealed) { e.preventDefault();
+                        handleForgot(); }
+                } else if (e.key === '2' || e.key === 'ArrowRight') {
+                    if (isRevealed) { e.preventDefault();
+                        handleKnow(); }
+                }
+            });
+
+            // ============================================================
+            //  8. 启动
+            // ============================================================
+            if (currentMode === 'review' && state.wrongIds.length === 0) {
+                currentMode = 'learn';
+                state.mode = 'learn';
+                saveState(state);
+            }
+
+            render();
+            console.log('📘 雅思538 已加载 (手机优化)');
+            console.log(`📌 模式: ${currentMode}, 错词: ${state.wrongIds.length}`);
+
+        }); // end DOMContentLoaded
+    </script>
+</body>
+</html>
