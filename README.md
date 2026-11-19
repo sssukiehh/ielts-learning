@@ -24,7 +24,6 @@
 ### 一起学雅
 
 <img width="1897" height="908" alt="image" src="https://github.com/user-attachments/assets/62e9feb0-14dc-4d57-a28a-be4e1b88bbc1" />
-<img width="1084" height="2165" alt="9a93d718d199416cf6767d5e3e6171f" src="https://github.com/user-attachments/assets/de330e0b-551c-4a14-a7e2-c8baae560d42" />
 
 ### 单词听写
 
@@ -36,7 +35,6 @@
 - 未作答：按设定间隔自动滚词（可当作跟读模式）
 
 <img width="1896" height="915" alt="image" src="https://github.com/user-attachments/assets/d9619d88-6ede-4e45-9568-ea4a742e1c6e" />
-<img width="1084" height="2165" alt="84d16ab411dc8ea0dca8413490beaef" src="https://github.com/user-attachments/assets/b96cbdba-797b-480a-91a0-a760102b083f" />
 
 ### 同义替换
 
@@ -45,8 +43,6 @@
 - 也可上传自定义「单词 + 释义 / 同义替换」，短语词组也能录
 
 <img width="1900" height="917" alt="image" src="https://github.com/user-attachments/assets/75569ed3-0186-4c1d-8475-9b536ee77dba" />
-<img width="1084" height="2164" alt="7e6ca2f60fc651fd5ef5abdeba177d8" src="https://github.com/user-attachments/assets/f9fc3036-c2cf-4d1d-b178-e0d057458ad4" />
-
 
 ### 词汇闯关
 
@@ -54,7 +50,6 @@
 - 题目来自自定义词表，词表充足时支持听音选词
 
 <img width="1898" height="918" alt="image" src="https://github.com/user-attachments/assets/fe4ec927-2229-4aa6-8dd0-dc54c22d10e3" />
-<img width="1084" height="2151" alt="a96dacf108515cd64a1e44f7c28c46c" src="https://github.com/user-attachments/assets/8ae4e78d-9684-4c7c-8975-24cfca3ea4f0" />
 
 ## 本地使用
 
