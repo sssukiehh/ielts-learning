@@ -246,8 +246,12 @@ button{font-family:inherit;color:inherit}
 .d-done-icon{font-size:42px;display:block;margin-bottom:4px}
 .d-done-title{font-size:18px;font-weight:800}
 .d-done-stats{font-size:13px;color:var(--sub);margin:6px 0 14px;line-height:1.5}
+.d-done-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
 .d-restart{border:none;background:var(--green);color:#fff;border-radius:99px;padding:11px 24px;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 6px 16px rgba(15,184,145,.24);touch-action:manipulation}
 .d-restart:active{transform:scale(.96)}
+.d-review-wrong{border:1px solid #f0b8b6;background:#fff5f5;color:#c0392b;border-radius:99px;padding:10px 20px;font-size:14px;font-weight:800;cursor:pointer;touch-action:manipulation}
+.d-review-wrong:active{transform:scale(.96)}
+.d-review-wrong.hidden{display:none}
 
 .d-toggles{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
 .d-toggle{display:inline-flex;align-items:center;gap:6px;background:#f3f6fc;border:1px solid var(--line);border-radius:99px;padding:6px 11px;font-size:12px;font-weight:600;color:#4a5874;cursor:pointer;user-select:none}
@@ -669,7 +673,10 @@ take into account</pre>
                 <span class="d-done-icon">🎉</span>
                 <div class="d-done-title">本组听写完成</div>
                 <div class="d-done-stats" id="dDoneStats">答对 0 · 答错 0 · 未做 0</div>
-                <button class="d-restart" id="dRestartBtn">重新开始</button>
+                <div class="d-done-actions">
+                    <button class="d-restart" id="dRestartBtn">重新开始</button>
+                    <button class="d-review-wrong hidden" id="dReviewWrongBtn">🔁 复盘错词</button>
+                </div>
             </div>
 
             <div class="word-list-container hidden" id="dWordListContainer">
@@ -1539,6 +1546,7 @@ const Dictation = (function () {
     const doneBox = $('dDone');
     const doneStats = $('dDoneStats');
     const restartBtn = $('dRestartBtn');
+    const reviewWrongBtn = $('dReviewWrongBtn');
 
     const STORAGE_KEY = 'ielts_dictation_words_v1';
     const SETTINGS_KEY = 'ielts_dictation_settings_v1';
@@ -1613,6 +1621,32 @@ const Dictation = (function () {
             listStatus.textContent = '答对 ' + counts.correct + ' · 答错 ' + counts.wrong;
         }
         doneStats.textContent = '答对 ' + counts.correct + ' · 答错 ' + counts.wrong + ' · 未做 ' + counts.unanswered;
+        reviewWrongBtn.classList.toggle('hidden', counts.wrong === 0);
+        if (counts.wrong > 0) {
+            reviewWrongBtn.textContent = '🔁 复盘错词（' + counts.wrong + '）';
+        }
+    }
+
+    function getWrongWords() {
+        const wrongWords = [];
+        Object.keys(results).forEach(function (key) {
+            if (results[key] !== 'wrong') return;
+            const idx = parseInt(key, 10);
+            if (words[idx]) wrongWords.push(words[idx]);
+        });
+        return wrongWords;
+    }
+
+    function reviewWrongWords() {
+        const wrongWords = getWrongWords();
+        if (wrongWords.length === 0) return;
+        clearTimedTimers();
+        cancelSpeech();
+        loadWords(wrongWords, false);
+        speakTimedWord();
+        try { answerInput.focus(); } catch (e) {}
+        updateButtons();
+        renderTimerDisplay();
     }
 
     function escapeHtml(text) {
@@ -2333,6 +2367,7 @@ const Dictation = (function () {
     });
     btnRepeat.addEventListener('click', repeatCurrent);
     restartBtn.addEventListener('click', restart);
+    reviewWrongBtn.addEventListener('click', reviewWrongWords);
     toggleCurrentBtn.addEventListener('click', toggleCurrent);
     toggleListBtn.addEventListener('click', toggleList);
 

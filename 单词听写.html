@@ -313,6 +313,73 @@
             transform: scale(0.96);
         }
 
+        /* ========== 完成复盘 ========== */
+        .done-panel {
+            display: none;
+            text-align: center;
+            background: linear-gradient(135deg, #f8fffc, #f0fdf9);
+            border: 1px solid #d8f4e9;
+            border-radius: 18px;
+            padding: 22px 16px;
+            margin-bottom: 12px;
+        }
+        .done-panel.show {
+            display: block;
+        }
+        .done-panel .done-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .done-panel .done-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .done-panel .done-stats {
+            font-size: 13px;
+            color: #64748b;
+            margin: 6px 0 14px;
+            line-height: 1.5;
+        }
+        .done-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+        .btn-restart-all {
+            border: none;
+            background: #0fb891;
+            color: #fff;
+            border-radius: 99px;
+            padding: 11px 22px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(15,184,145,.24);
+        }
+        .btn-restart-all:active {
+            transform: scale(0.96);
+        }
+        .btn-review-wrong {
+            border: 1px solid #f0b8b6;
+            background: #fff5f5;
+            color: #c0392b;
+            border-radius: 99px;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .btn-review-wrong:active {
+            transform: scale(0.96);
+        }
+        .btn-review-wrong.hidden {
+            display: none;
+        }
+
         /* ========== 可拖动进度条 ========== */
         .progress-slider-area {
             display: flex;
@@ -938,6 +1005,17 @@
             </div>
         </div>
 
+        <!-- ===== 完成复盘 ===== -->
+        <div class="done-panel" id="donePanel">
+            <span class="done-icon">🎉</span>
+            <div class="done-title">本组听写完成</div>
+            <div class="done-stats" id="doneStats">答对 0 · 答错 0 · 未做 0</div>
+            <div class="done-actions">
+                <button class="btn-restart-all" id="btnRestartAll" type="button">重新开始</button>
+                <button class="btn-review-wrong hidden" id="btnReviewWrong" type="button">🔁 复盘错词</button>
+            </div>
+        </div>
+
         <!-- ===== 可拖动进度条 ===== -->
         <div class="progress-slider-area">
             <input type="range" id="progressSlider" min="0" max="0" value="0" step="1">
@@ -1028,6 +1106,10 @@
             const answerFeedback = document.getElementById('answerFeedback');
             const revealBtn = document.getElementById('revealBtn');
             const progressText = document.getElementById('progressText');
+            const donePanel = document.getElementById('donePanel');
+            const doneStats = document.getElementById('doneStats');
+            const btnRestartAll = document.getElementById('btnRestartAll');
+            const btnReviewWrong = document.getElementById('btnReviewWrong');
             const progressSlider = document.getElementById('progressSlider');
             const sliderIndex = document.getElementById('sliderIndex');
             const sliderTotal = document.getElementById('sliderTotal');
@@ -1622,6 +1704,7 @@
                 currentIndex = 0;
                 results = {};
                 resetAnswerState();
+                hideDonePanel();
                 updateProgress();
                 btnPlay.disabled = false;
                 btnPause.classList.add('hidden');
@@ -1632,6 +1715,51 @@
                 renderWordList();
                 updateListStatus('已停止');
                 updateButtons();
+            }
+
+            function countResults() {
+                let correct = 0;
+                let wrong = 0;
+                Object.keys(results).forEach(function(key) {
+                    const value = results[key];
+                    if (value === 'correct') correct++;
+                    else if (value === 'wrong') wrong++;
+                });
+                return {
+                    correct: correct,
+                    wrong: wrong,
+                    unanswered: Math.max(0, words.length - correct - wrong)
+                };
+            }
+
+            function getWrongWords() {
+                const wrongWords = [];
+                Object.keys(results).forEach(function(key) {
+                    if (results[key] !== 'wrong') return;
+                    const idx = parseInt(key, 10);
+                    if (words[idx]) wrongWords.push(words[idx]);
+                });
+                return wrongWords;
+            }
+
+            function showDonePanel() {
+                const counts = countResults();
+                doneStats.textContent = '答对 ' + counts.correct + ' · 答错 ' + counts.wrong + ' · 未做 ' + counts.unanswered;
+                btnReviewWrong.classList.toggle('hidden', counts.wrong === 0);
+                if (counts.wrong > 0) {
+                    btnReviewWrong.textContent = '🔁 复盘错词（' + counts.wrong + '）';
+                }
+                donePanel.classList.add('show');
+                currentDisplay.classList.add('hidden');
+                document.querySelector('.progress-slider-area').classList.add('hidden');
+                document.getElementById('controls').classList.add('hidden');
+            }
+
+            function hideDonePanel() {
+                donePanel.classList.remove('show');
+                currentDisplay.classList.remove('hidden');
+                document.querySelector('.progress-slider-area').classList.remove('hidden');
+                document.getElementById('controls').classList.remove('hidden');
             }
 
             function finishPlayback() {
@@ -1645,8 +1773,8 @@
                 answerInput.disabled = true;
                 revealBtn.disabled = true;
                 answerInput.value = '';
-                answerFeedback.textContent = '🎉 全部完成！';
-                answerFeedback.className = 'answer-feedback ok';
+                answerFeedback.textContent = '';
+                answerFeedback.className = 'answer-feedback';
                 updateProgress();
                 updateListStatus('✅ 完成');
                 btnPlay.disabled = true;
@@ -1655,6 +1783,56 @@
                 btnPause.classList.add('hidden');
                 btnResume.classList.add('hidden');
                 renderWordList();
+                updateButtons();
+                showDonePanel();
+            }
+
+            function restartAll() {
+                if (words.length === 0) return;
+                hideDonePanel();
+                results = {};
+                currentIndex = 0;
+                resetAnswerState();
+                updateProgress();
+                updateListStatus('已加载');
+                isPlaying = true;
+                isPaused = false;
+                isStopped = false;
+                speakWord(0);
+            }
+
+            function reviewWrongWords() {
+                const wrongWords = getWrongWords();
+                if (wrongWords.length === 0) return;
+                hideDonePanel();
+                if (isPlaying || isPaused || isSpeaking) {
+                    cancelSpeechAndTimer();
+                    isPlaying = false;
+                    isPaused = false;
+                    isSpeaking = false;
+                }
+                clearAutoAdvance();
+                words = wrongWords.slice();
+                currentIndex = 0;
+                results = {};
+                isStopped = true;
+                resetAnswerState();
+                updateWordCount();
+                renderWordList();
+                updateProgress();
+                updateListStatus('复盘错词 ' + words.length + ' 个');
+                fileName.textContent = `🔁 复盘错词 (${words.length} 个)`;
+                btnPlay.disabled = false;
+                btnStop.disabled = true;
+                btnPause.classList.add('hidden');
+                btnResume.classList.add('hidden');
+                btnPrev.disabled = true;
+                btnNext.disabled = words.length < 2;
+                btnRepeat.disabled = false;
+                isPlaying = true;
+                isPaused = false;
+                isStopped = false;
+                speakWord(0);
                 updateButtons();
             }
 
@@ -1683,6 +1861,7 @@
                 isStopped = true;
                 results = {};
                 resetAnswerState();
+                hideDonePanel();
 
                 updateWordCount();
                 renderWordList();
@@ -1855,6 +2034,8 @@
             });
 
             revealBtn.addEventListener('click', revealAnswer);
+            btnRestartAll.addEventListener('click', restartAll);
+            btnReviewWrong.addEventListener('click', reviewWrongWords);
 
             progressSlider.addEventListener('input', function() {
                 const val = parseInt(this.value);
